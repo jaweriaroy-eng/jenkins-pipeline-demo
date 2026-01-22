@@ -1,19 +1,23 @@
 pipeline {
     agent any
+
     stages {
         stage('Build') {
             steps {
-                sh 'echo Build stage'
+                echo 'Build stage running'
             }
         }
+
         stage('Test') {
             steps {
-                sh 'echo Test stage'
+                echo 'Test stage running'
             }
         }
-        stage('Deploy') {
+
+        stage('Docker Build') {
             steps {
-                sh 'echo Deploy stage'
+                sh 'docker --version'
+                sh 'docker build -t demo-app:1.0 .'
             }
         }
     }
