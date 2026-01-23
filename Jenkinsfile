@@ -3,7 +3,8 @@ pipeline {
 
     environment {
         IMAGE_NAME = "jiaroy/my-first-docker-image"
-        CONTAINER_NAME = "nginx-devops-app"
+        IMAGE_TAG  = "latest"
+        DOCKER_CREDS = "dockerhub-creds"
     }
 
     stages {
@@ -14,53 +15,30 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                echo "Build stage running"
+                sh "docker build -t $IMAGE_NAME:$IMAGE_TAG ."
             }
         }
 
-        stage('Test') {
+        stage('Run Container') {
             steps {
-                echo "Test stage running"
+                sh "docker run --rm $IMAGE_NAME:$IMAGE_TAG"
             }
         }
 
-        stage('Docker Build') {
-            steps {
-                sh """
-                docker build -t ${IMAGE_NAME}:latest .
-                """
-            }
-        }
-
-        stage('Docker Push') {
+        stage('Push to DockerHub') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
+                    credentialsId: DOCKER_CREDS,
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh """
-                    echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
-                    docker push ${IMAGE_NAME}:latest
-                    """
+                    sh '''
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker push $IMAGE_NAME:$IMAGE_TAG
+                    '''
                 }
-            }
-        }
-
-        stage('Deploy (Nginx)') {
-            steps {
-                sh """
-                docker rm -f ${CONTAINER_NAME} || true
-                docker run -d --name ${CONTAINER_NAME} -p 8081:80 ${IMAGE_NAME}:latest
-                """
-            }
-        }
-
-        stage('Cleanup') {
-            steps {
-                sh 'docker image prune -f'
             }
         }
     }
