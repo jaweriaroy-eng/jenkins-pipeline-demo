@@ -1,3 +1,5 @@
-FROM ubuntu:24.04
-RUN echo "Hello from Docker image built by Jenkins"
-CMD ["echo", "Container running"]
+FROM nginx:alpine
+
+COPY index.html /usr/share/nginx/html/index.html
+
+EXPOSE 80
