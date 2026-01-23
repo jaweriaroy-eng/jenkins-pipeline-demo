@@ -21,14 +21,16 @@ pipeline {
             }
         }
 
-       stage('Run Container') {
+      stage('Run Container') {
     steps {
         sh '''
-        docker rm -f nginx-demo || true
-        docker run -d --name nginx-demo -p 8081:80 jiaroy/my-first-docker-image:latest
+        docker ps -q --filter "name=nginx-demo" | xargs -r docker stop
+        docker ps -aq --filter "name=nginx-demo" | xargs -r docker rm
+        docker run -d --name nginx-demo -p 8082:80 jiaroy/my-first-docker-image:latest
         '''
     }
 }
+
 
 
         stage('Push to DockerHub') {
