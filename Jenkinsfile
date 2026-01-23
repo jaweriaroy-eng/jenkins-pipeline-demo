@@ -3,29 +3,33 @@ pipeline {
 
     environment {
         IMAGE_NAME = "jiaroy/my-first-docker-image"
-        BUILD_TAG_VERSION = "${BUILD_NUMBER}"
         CONTAINER_NAME = "nginx-devops-app"
     }
 
     stages {
 
         stage('Checkout') {
-            steps { checkout scm }
+            steps {
+                checkout scm
+            }
         }
 
         stage('Build') {
-            steps { echo "Build stage running" }
+            steps {
+                echo "Build stage running"
+            }
         }
 
         stage('Test') {
-            steps { echo "Test stage running" }
+            steps {
+                echo "Test stage running"
+            }
         }
 
         stage('Docker Build') {
             steps {
                 sh """
-                docker build -t ${IMAGE_NAME}:${BUILD_TAG_VERSION} .
-                docker tag ${IMAGE_NAME}:${BUILD_TAG_VERSION} ${IMAGE_NAME}:latest
+                docker build -t ${IMAGE_NAME}:latest .
                 """
             }
         }
@@ -39,7 +43,6 @@ pipeline {
                 )]) {
                     sh """
                     echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
-                    docker push ${IMAGE_NAME}:${BUILD_TAG_VERSION}
                     docker push ${IMAGE_NAME}:latest
                     """
                 }
@@ -50,13 +53,15 @@ pipeline {
             steps {
                 sh """
                 docker rm -f ${CONTAINER_NAME} || true
-                docker run -d --name ${CONTAINER_NAME} -p 80:80 ${IMAGE_NAME}:latest
+                docker run -d --name ${CONTAINER_NAME} -p 8081:80 ${IMAGE_NAME}:latest
                 """
             }
         }
 
         stage('Cleanup') {
-            steps { sh 'docker image prune -f' }
+            steps {
+                sh 'docker image prune -f'
+            }
         }
     }
 }
