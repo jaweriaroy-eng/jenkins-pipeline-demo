@@ -21,11 +21,15 @@ pipeline {
             }
         }
 
-        stage('Run Container') {
-            steps {
-                sh "docker run --rm $IMAGE_NAME:$IMAGE_TAG"
-            }
-        }
+       stage('Run Container') {
+    steps {
+        sh '''
+        docker rm -f nginx-demo || true
+        docker run -d --name nginx-demo -p 8081:80 jiaroy/my-first-docker-image:latest
+        '''
+    }
+}
+
 
         stage('Push to DockerHub') {
             steps {
